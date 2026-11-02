@@ -2,7 +2,7 @@
 
 Mastère Big Data & IA M1 — Sup de Vinci — Session 2026-2027
 Enseignant : M. L. Ndao
-Auteures : Leslie AKONO, Ashley LONKING
+Auteurs : Leslie AKONO, Ashley LONKING
 
 > Du data lake au tableau de bord : un tableau de bord Streamlit construit sur les
 > transactions immobilières françaises de 2025, avec une chaîne bronze / silver / gold,
@@ -193,4 +193,4 @@ projet-dataviz-Leslie-Ashley/
 - [ ] Bronze, silver, gold
 - [ ] Ontologie et requêtes SPARQL
 - [ ] Notebook d'exploration
-- [ ] Tableau de bord Streamlit
+- [ ] Tableau de bord 
