@@ -1,11 +1,11 @@
-# Projet Data Viz — Où ouvrir la prochaine agence ? (DVF 2022)
+# Projet Data Viz — Où ouvrir la prochaine agence ? (DVF 2025)
 
 Mastère Big Data & IA M1 — Sup de Vinci — Session 2026-2027
 Enseignant : M. L. Ndao
 Auteurs : Leslie AKONO, Ashley LONKING
 
-> Du data lake au tableau de bord : un tableau de bord  construit sur les
-> transactions immobilières françaises de 2022, avec une chaîne bronze / silver / gold,
+> Du data lake au tableau de bord : un tableau de bord Streamlit construit sur les
+> transactions immobilières françaises de 2025, avec une chaîne bronze / silver / gold,
 > une ontologie et des requêtes SPARQL.
 
 ## 1. Jeu de données
@@ -19,20 +19,14 @@ pas des prix d'annonce.
 |---|---|
 | Source | https://www.data.gouv.fr/datasets/demandes-de-valeurs-foncieres-geolocalisees |
 | Licence | Licence Ouverte / Open Licence 2.0 |
-| Fichier utilisé | `full-2022.csv.gz` (134,7 Mo compressé), livraison du 20/10/2026 |
-| Période | année 2022 |
-| Volume | 4 676 488 lignes dans le fichier de la livraison précédente (19/10/2026). **À recompter avec le fichier téléchargé pour prendre en compte les eventuelles mises à jour  |
+| Fichier utilisé | `full-2025.csv.gz`, livraison du 20/10/2026 |
+| Période | année 2025 (une extension à 2024 est envisagée selon la charge de traitement) |
+| Volume | 3 793 113 lignes de données, 40 colonnes |
 | Dimension temporelle | `date_mutation` |
 | Dimension géographique | commune, département, latitude / longitude |
-| Téléchargement | par script, sans compte ni clé (`scripts/download_dvf.py`, à venir) |
+| Téléchargement | par script, sans compte ni clé : `scripts/download_dvf.py` |
 
-Les données ne sont pas versionnées : le dossier `data/` est ignoré par Git.
 
-**Remarque sur les mises à jour.** Chaque livraison semestrielle retraite l'ensemble
-de l'historique. Le nombre de lignes, les coordonnées et même certains noms de colonnes
-peuvent donc différer d'une livraison à l'autre, et `id_mutation` n'est pas stable
-entre deux livraisons. Les chiffres de ce dépôt sont ceux de la livraison indiquée
-ci-dessus.
 
 ### 1.1 Comment lire le fichier
 
@@ -52,8 +46,6 @@ Mutation (id_mutation)          prix, date, nature de la vente
 | Parcelle | `id_parcelle`, adresse, `surface_terrain`, `longitude`, `latitude` | propres à chaque parcelle ; `surface_terrain` est répétée si la parcelle porte plusieurs locaux |
 | Local | `type_local`, `surface_reelle_bati`, `nombre_pieces_principales` | propres à chaque ligne de local ; vides pour un terrain nu |
 
-Exemple réel, extrait du fichier 2021 : la mutation `2021-2` occupe 5 lignes
-(4 parcelles, 2 maisons, 1 dépendance, 2 petits terrains) pour un seul prix de 124 000 €.
 
 ### 1.2 Points d'attention pour le traitement
 
@@ -72,23 +64,22 @@ Exemple réel, extrait du fichier 2021 : la mutation `2021-2` occupe 5 lignes
   leur zéro initial s'ils sont lus comme des nombres.
 - **Colonnes souvent vides** : lots, anciens codes commune et parcelle, suffixe
   d'adresse, numéro de volume.
-- **Coordonnées manquantes** : certaines lignes n'ont pas de latitude / longitude
-  (géométrie de parcelle absente du cadastre, parcelle passée dans le domaine public).
+- **Coordonnées manquantes** : certaines lignes n'ont pas de latitude / longitude.
 
 ### 1.3 Dictionnaire des colonnes
 
-Le fichier contient 40 colonnes. Les noms ci-dessous suivent la documentation de la
-livraison du 20/10/2026 ; l'en-tête exact du fichier téléchargé fait foi.
+Le fichier contient 40 colonnes. Les noms ci-dessous suivent l'en-tête réel du fichier
+`full-2025.csv`.
 
 **Mutation**
 
 | Colonne | Description |
 |---|---|
 | `id_mutation` | Identifiant de mutation (non stable d'une livraison à l'autre), sert à grouper les lignes |
-| `date_mutation` | Date de la mutation, format ISO-8601 (AAAA-MM-JJ) |
+| `date_mutation` | Date de la mutation, format (AAAA-MM-JJ) |
 | `numero_disposition` | Numéro de disposition |
 | `nature_mutation` | Nature de la mutation |
-| `valeur_fonciere` | Prix de la mutation en euros (séparateur décimal : point) |
+| `valeur_fonciere` | Prix de la mutation en euros |
 
 **Adresse et localisation**
 
@@ -98,19 +89,19 @@ livraison du 20/10/2026 ; l'en-tête exact du fichier téléchargé fait foi.
 | `adresse_suffixe` | Suffixe du numéro de l'adresse (B, T, Q...) |
 | `adresse_code_voie` | Code FANTOIR de la voie (4 caractères) |
 | `adresse_nom_voie` | Nom de la voie |
-| `code_postal` | Code postal (5 caractères, à lire en texte) |
+| `code_postal` | Code postal (5 caractères) |
 | `code_commune` | Code commune INSEE actuel (5 caractères) |
-| `nom_commune` | Nom actuel de la commune (accentué) |
+| `nom_commune` | Nom actuel de la commune |
 | `ancien_code_commune` | Code INSEE d'origine, si différent du code actuel |
 | `ancien_nom_commune` | Nom d'origine, si le code commune a changé |
-| `code_departement` | Code département INSEE (2 ou 3 caractères, à lire en texte) |
-| `longitude`, `latitude` | Centre de la parcelle concernée (WGS-84) |
+| `code_departement` | Code département INSEE |
+| `longitude`, `latitude` | Centre de la parcelle concernée |
 
 **Parcelle**
 
 | Colonne | Description |
 |---|---|
-| `id_parcelle` | Identifiant de parcelle actuel (14 caractères) |
+| `id_parcelle` | Identifiant de parcelle actuel |
 | `ancien_id_parcelle` | Identifiant d'origine, si différent de l'actuel |
 | `numero_volume` | Numéro de volume |
 | `code_nature_culture`, `nature_culture` | Nature de la parcelle (code et libellé) |
@@ -130,8 +121,8 @@ livraison du 20/10/2026 ; l'en-tête exact du fichier téléchargé fait foi.
 | Colonne | Description |
 |---|---|
 | `nombre_lots` | Nombre de lots |
-| `lot_1_numero` à `lot_5_numero` | Numéro de chaque lot (jusqu'à 5) |
-| `lot_1_surface_carrez` à `lot_5_surface_carrez` | Surface Carrez de chaque lot |
+| `lot1_numero` à `lot5_numero` | Numéro de chaque lot (jusqu'à 5) |
+| `lot1_surface_carrez` à `lot5_surface_carrez` | Surface carée de chaque lot |
 
 ### 1.4 Colonnes utilisées pour répondre à la question du persona
 
@@ -142,17 +133,19 @@ livraison du 20/10/2026 ; l'en-tête exact du fichier téléchargé fait foi.
 
 ## 2. Persona
 
-**Claire, directrice du développement d'un réseau d'agences immobilières.**
+**Claire, Directrice du Développement d'un Réseau d'Agences Immobilières.**
 
 - **Ce qu'elle décide :** dans quels départements ouvrir une nouvelle agence ou renforcer
   les équipes existantes.
 - **À quelle fréquence :** chaque trimestre, lors du comité d'investissement.
 - **Ce dont elle a besoin :** repérer rapidement les territoires où l'activité est
   réelle, sans que les prix ne soient déjà hors de portée de la clientèle de son réseau.
+  Elle décide aujourd'hui : elle a donc besoin de données récentes, d'où le choix de
+  l'année 2025.
 
 **Question principale :** dans quels départements le marché est-il actif (beaucoup de
 ventes de logements) tout en restant accessible (prix médian au m² inférieur à la médiane
-nationale), et comment cette activité évolue-t-elle mois par mois en 2022 ?
+nationale), et comment cette activité évolue-t-elle mois par mois en 2025 ?
 
 *Périmètre pressenti* : mutations de type vente, portant sur un seul logement (maison ou
 appartement), avec prix et surface cohérents. Les règles de nettoyage exactes, avec le
@@ -165,16 +158,16 @@ nombre de lignes retirées par règle, seront documentées dans la couche silver
 | Bronze | CSV brut en Delta dans RustFS, sans transformation |
 | Silver | typage, nettoyage, une ligne par vente, tableau « règle / lignes retirées » |
 | Gold | agrégats par département et par mois (nombre de ventes, prix médian au m²...), exportés dans PostgreSQL |
-| Sémantique | ontologie `.ttl` (Mutation, Parcelle, Local, Commune...) et trois requêtes SPARQL |
+| Sémantique | ontologie `.ttl` (Mutation, Parcelle, Local, Commune...) et 3 requêtes SPARQL (minimum) |
 | Visualisation | notebook d'exploration et un graphique avant / après justifié par les principes de perception |
-| Tableau de bord | Streamlit/ou powerbi : 3 à 5 KPI avec fiches, récit contexte / constat / recommandation, au moins un filtre |
+| Tableau de bord | Streamlit : 3 à 5 KPIs avec fiches, récit contexte / constat / recommandation, au moins un filtre |
 | Déploiement | lancement par `docker compose` |
 
 ## 4. Lancer le projet *(à compléter au fil de l'avancement)*
 
 1. Cloner le dépôt.
 2. Télécharger les données : `python scripts/download_dvf.py`
-   (écrit `data/raw/full-2022.csv`, aucune clé requise).
+   (écrit `data/raw/full-2025.csv`, aucune clé requise).
 3. Démarrer les services : `docker compose up -d`
 4. Ouvrir Jupyter et exécuter les notebooks dans l'ordre.
 5. Ouvrir le tableau de bord Streamlit.
@@ -195,8 +188,8 @@ projet-dataviz-Leslie-Ashley/
 
 ## 6. État d'avancement
 
-- [x] Choix du jeu de données et du persona (echeance30/10)
-- [ ] Script de téléchargement
+- [x] Choix du jeu de données et du persona (échéance du 30/10)
+- [x] Script de téléchargement (année 2025)
 - [ ] Bronze, silver, gold
 - [ ] Ontologie et requêtes SPARQL
 - [ ] Notebook d'exploration
