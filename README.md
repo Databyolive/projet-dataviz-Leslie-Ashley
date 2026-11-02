@@ -193,4 +193,4 @@ projet-dataviz-Leslie-Ashley/
 - [ ] Bronze, silver, gold
 - [ ] Ontologie et requêtes SPARQL
 - [ ] Notebook d'exploration
-- [ ] Tableau de bord 
+- [ ] Tableau de bord
