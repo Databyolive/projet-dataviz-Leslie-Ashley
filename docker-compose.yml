@@ -1,0 +1,79 @@
+# Stack du projet DVF : docker compose up -d
+#   JupyterLab  http://localhost:8890/lab?token=dvf
+#   Adminer     http://localhost:8081   (Systeme PostgreSQL, serveur postgres, dvf / dvf, base dvf)
+#   RustFS      http://localhost:9003   (rustfsadmin / rustfsadmin)
+name: projet-dataviz
+
+services:
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${PG_USER:-dvf}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-dvf}
+      POSTGRES_DB: ${PG_DB:-dvf}
+    ports:
+      - "5433:5432"
+    volumes:
+      - dvf-data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer:latest              
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+
+  rustfs-init:
+    image: alpine:3.20
+    command: sh -c "chown -R 10001:10001 /data && echo volume pret"
+    volumes:
+      - lake-data:/data
+
+  rustfs:
+    image: rustfs/rustfs:latest  
+    ports:
+      - "9002:9000"                    # API S3
+      - "9003:9001"                    # console web
+    environment:
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-rustfsadmin}
+      RUSTFS_UNSAFE_BYPASS_DISK_CHECK: "true"
+    volumes:
+      - lake-data:/data
+    depends_on:
+      rustfs-init:
+        condition: service_completed_successfully
+
+  jupyter:
+    image: quay.io/jupyter/pyspark-notebook:latest  
+    ports:
+      - "8890:8888"                    # JupyterLab
+      - "4041:4040"                    # Spark UI
+    volumes:
+      - .:/home/jovyan/work            # le depot du projet, visible dans Jupyter
+      - ivy-cache:/home/jovyan/.ivy2 
+    command: start-notebook.py --IdentityProvider.token=${JUPYTER_TOKEN:-dvf}
+    environment:
+      S3_ENDPOINT: http://rustfs:9000
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-rustfsadmin}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-rustfsadmin}
+      PG_URL: jdbc:postgresql://postgres:5432/${PG_DB:-dvf}
+      PG_HOST: postgres
+      PG_DB: ${PG_DB:-dvf}
+      PG_USER: ${PG_USER:-dvf}
+      PG_PASSWORD: ${PG_PASSWORD:-dvf}
+    depends_on:
+      - postgres
+      - rustfs
+
+volumes:
+  dvf-data:
+  lake-data:
+  ivy-cache:
