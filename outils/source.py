@@ -50,7 +50,7 @@ def creer_session(nom: str, memoire: str = "4g") -> SparkSession:
         # Delta
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
-        # accès à RustFS comme à un S3 : adresse, clés, chemins et non noms de domaine, pas de SSL
+        # accès à RustFS 
         .config("spark.hadoop.fs.s3a.endpoint", os.environ["S3_ENDPOINT"])
         .config("spark.hadoop.fs.s3a.access.key", os.environ["S3_ACCESS_KEY"])
         .config("spark.hadoop.fs.s3a.secret.key", os.environ["S3_SECRET_KEY"])
