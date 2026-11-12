@@ -33,15 +33,15 @@ def _version_hadoop() -> str:
     return re.search(r"hadoop-client-api-(.+)\.jar", jars[0]).group(1)
 
 
-def creer_session(nom: str, memoire: str = "4g") -> SparkSession:
+def creer_session(nom: str, memoire: str = "4g",paquets_supplementaires=()) -> SparkSession:
     """Crée une session Spark capable d'écrire en Delta et de lire/écrire dans RustFS."""
     spark_version = pyspark.__version__
     cle = ".".join(spark_version.split(".")[:2])
     if cle not in DELTA_PAR_SPARK:
         raise RuntimeError(f"Spark {spark_version} : ajouter son paquet Delta dans DELTA_PAR_SPARK.")
     hadoop = _version_hadoop()
-    paquets = ",".join([DELTA_PAR_SPARK[cle], f"org.apache.hadoop:hadoop-aws:{hadoop}"])
-
+    paquets = ",".join([DELTA_PAR_SPARK[cle], f"org.apache.hadoop:hadoop-aws:{hadoop}", *paquets_supplementaires])
+    
     print(f"Spark {spark_version} (Hadoop {hadoop}) + Delta Lake + data lake S3. "
           "Le premier démarrage télécharge des jars : plusieurs minutes.")
     spark = (
