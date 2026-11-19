@@ -1,0 +1,109 @@
+@prefix dvf:  <https://example.org/dvf#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.org/dvf> a owl:Ontology ;
+    rdfs:label "Ontologie DVF : ventes de logements"@fr ;
+    rdfs:comment "Décrit les ventes de logements (DVF) et leur localisation : mutation, logement, parcelle, commune, département."@fr .
+
+# ---------------------------------------------------------------- Classes
+dvf:Mutation a owl:Class ;
+    rdfs:label "Mutation"@fr ;
+    rdfs:comment "Une vente enregistrée dans DVF."@fr .
+
+dvf:Logement a owl:Class ;
+    rdfs:label "Logement"@fr ;
+    rdfs:comment "Un bien d'habitation vendu."@fr .
+
+dvf:Maison a owl:Class ;
+    rdfs:subClassOf dvf:Logement ;
+    owl:disjointWith dvf:Appartement ;
+    rdfs:label "Maison"@fr .
+
+dvf:Appartement a owl:Class ;
+    rdfs:subClassOf dvf:Logement ;
+    rdfs:label "Appartement"@fr .
+
+dvf:Parcelle a owl:Class ;
+    rdfs:label "Parcelle"@fr ;
+    rdfs:comment "Terrain cadastral sur lequel se trouve le logement."@fr .
+
+dvf:Commune a owl:Class ;
+    rdfs:label "Commune"@fr .
+
+dvf:Departement a owl:Class ;
+    rdfs:label "Département"@fr .
+
+# ---------------------------------------------------------------- Relations
+dvf:portesSur a owl:ObjectProperty ;
+    rdfs:label "porte sur"@fr ;
+    rdfs:domain dvf:Mutation ;
+    rdfs:range dvf:Logement .
+
+dvf:situeSurParcelle a owl:ObjectProperty ;
+    rdfs:label "est situé sur la parcelle"@fr ;
+    rdfs:domain dvf:Logement ;
+    rdfs:range dvf:Parcelle .
+
+dvf:situeeDans a owl:ObjectProperty ;
+    rdfs:label "est située dans la commune"@fr ;
+    rdfs:domain dvf:Parcelle ;
+    rdfs:range dvf:Commune .
+
+dvf:appartientA a owl:ObjectProperty ;
+    rdfs:label "appartient au département"@fr ;
+    rdfs:domain dvf:Commune ;
+    rdfs:range dvf:Departement .
+
+# ---------------------------------------------------------------- Propriétés de données
+dvf:valeurFonciere a owl:DatatypeProperty ;
+    rdfs:label "valeur foncière (€)"@fr ;
+    rdfs:domain dvf:Mutation ;
+    rdfs:range xsd:decimal .
+
+dvf:dateMutation a owl:DatatypeProperty ;
+    rdfs:label "date de la mutation"@fr ;
+    rdfs:domain dvf:Mutation ;
+    rdfs:range xsd:date .
+
+dvf:prixAuM2 a owl:DatatypeProperty ;
+    rdfs:label "prix au m² (€)"@fr ;
+    rdfs:comment "Valeur foncière divisée par la surface bâtie du logement."@fr ;
+    rdfs:domain dvf:Mutation ;
+    rdfs:range xsd:decimal .
+
+dvf:surfaceBati a owl:DatatypeProperty ;
+    rdfs:label "surface bâtie (m²)"@fr ;
+    rdfs:domain dvf:Logement ;
+    rdfs:range xsd:decimal .
+
+dvf:nombrePieces a owl:DatatypeProperty ;
+    rdfs:label "nombre de pièces principales"@fr ;
+    rdfs:domain dvf:Logement ;
+    rdfs:range xsd:integer .
+
+dvf:longitude a owl:DatatypeProperty ;
+    rdfs:label "longitude"@fr ;
+    rdfs:domain dvf:Parcelle ;
+    rdfs:range xsd:decimal .
+
+dvf:latitude a owl:DatatypeProperty ;
+    rdfs:label "latitude"@fr ;
+    rdfs:domain dvf:Parcelle ;
+    rdfs:range xsd:decimal .
+
+dvf:codeCommune a owl:DatatypeProperty ;
+    rdfs:label "code INSEE de la commune"@fr ;
+    rdfs:domain dvf:Commune ;
+    rdfs:range xsd:string .
+
+dvf:nomCommune a owl:DatatypeProperty ;
+    rdfs:label "nom de la commune"@fr ;
+    rdfs:domain dvf:Commune ;
+    rdfs:range xsd:string .
+
+dvf:codeDepartement a owl:DatatypeProperty ;
+    rdfs:label "code du département"@fr ;
+    rdfs:domain dvf:Departement ;
+    rdfs:range xsd:string .
